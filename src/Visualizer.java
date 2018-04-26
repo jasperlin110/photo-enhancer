@@ -87,6 +87,9 @@ public class Visualizer implements MouseListener, MouseMotionListener {
         System.out.println("Color set");
     }
 
+    /**
+     * @source CS61b hw5
+     */
     public void show(Picture img) {
         if (frame == null) {
             frame = new JFrame();

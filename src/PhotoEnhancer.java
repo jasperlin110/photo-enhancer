@@ -10,33 +10,9 @@ public class PhotoEnhancer {
         this.picture = new Picture(picture);
         energies = new double[picture.height()][picture.width()];
 
-        int left;
-        int right;
-
         for (int row = 0; row < picture.height(); row++) {
             for (int col = 0; col < picture.width(); col++) {
-                if (picture.width() > 1) {
-                    if (col == 0) {
-                        left = col;
-                        right = col + 1;
-                    } else if (col == picture.width() - 1) {
-                        left = col - 1;
-                        right = col;
-                    } else {
-                        left = col - 1;
-                        right = col + 1;
-                    }
-                } else {
-                    left = col;
-                    right = col;
-                }
-
-                if (row > 0) {
-                    int prevEnergyCol = findMin(left, col, right, energies[row - 1]);
-                    energies[row][col] = energyHelper(col, row) + energies[row - 1][prevEnergyCol];
-                } else {
-                    energies[row][col] = energyHelper(col, row);
-                }
+                energies[row][col] = energyHelper(col, row);
             }
         }
     }
@@ -59,6 +35,15 @@ public class PhotoEnhancer {
     // energy of pixel at column x and row y
     public double energy(int x, int y) {
         return energies[y][x];
+    }
+
+    // For recalculating the energy values of a specified area of pixels in case their energy values have changed
+    private void recalculateEnergies(int[] bounds) {
+        for (int row = bounds[0]; row < bounds[1]; row++) {
+            for (int col = bounds[2]; col < bounds[3]; col++) {
+                energies[row][col] = energyHelper(col, row);
+            }
+        }
     }
 
     // energy of pixel at column x and row y
@@ -175,6 +160,7 @@ public class PhotoEnhancer {
         return redDiffSquared + greenDiffSquared + blueDiffSquared;
     }
 
+    // Finds area around a specified pixel, effectively creating a "brush"
     public int[] findBounds(int x, int y) {
         int height = (int) (picture.height() * 0.01);
         int width = (int) (picture.width() * 0.01);
@@ -227,6 +213,7 @@ public class PhotoEnhancer {
         return min;
     }
 
+    // Finds the average color of the pixels in the area surrounding a specified pixel
     public Color findAverageColor(int x, int y) {
         int[] bounds = findBounds(x, y);
 
@@ -239,6 +226,7 @@ public class PhotoEnhancer {
         int count = 1;
         for (int row = bounds[0]; row < bounds[1]; row++) {
             for (int col = bounds[2]; col < bounds[3]; col++) {
+                // Only add pixel if its energy is less than that of the specified pixel
                 if (energies[row][col] < currentEnergy) {
                     Color color = picture.get(col, row);
                     averageRed += color.getRed();
@@ -248,6 +236,8 @@ public class PhotoEnhancer {
                 }
             }
         }
+
+        recalculateEnergies(bounds);
 
         return new Color(averageRed / count, averageGreen / count, averageBlue / count);
     }
