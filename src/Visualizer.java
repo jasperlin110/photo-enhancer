@@ -73,13 +73,16 @@ public class Visualizer implements MouseListener, MouseMotionListener {
     }
 
     private void paintBounds(Picture p, int[] bounds, Point point) {
-        double originalEnergy = pe.energy(point.x, point.y);
 //        double originalEnergy = pe.energy(originalMouseX, originalMouseY);
+//        Color originalColor = p.get(originalMouseX, originalMouseY);
+
         for (int row = bounds[0]; row < bounds[1]; row++) {
             for (int col = bounds[2]; col < bounds[3]; col++) {
                 // 4/26: added if statement.
-                if (pe.energy(col, row) < originalEnergy) {
+                if (pe.energy(col, row) < pe.energy(point.x, point.y)) {
                     Color color = pe.findAverageColor(col, row);
+//                    Color color = pe.findAverageColor(col, row, originalColor);
+//                    Color color = pe.findAverageColor(originalMouseX, originalMouseY);
                     p.set(col, row, color);
                 }
             }

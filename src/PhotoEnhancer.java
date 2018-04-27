@@ -94,6 +94,18 @@ public class PhotoEnhancer {
             rightGreen = picture.get(0, y).getGreen();
             rightBlue = picture.get(0, y).getBlue();
         } else {
+//            Color leftAverage = findAverageHelper(x - 3, y);
+//
+//            leftRed = leftAverage.getRed();
+//            leftGreen = leftAverage.getGreen();
+//            leftBlue = leftAverage.getBlue();
+//
+//            Color rightAverage = findAverageHelper(x + 3, y);
+//
+//            rightRed = rightAverage.getRed();
+//            rightGreen = rightAverage.getGreen();
+//            rightBlue = rightAverage.getBlue();
+
             leftRed = picture.get(x - 1, y).getRed();
             leftGreen = picture.get(x - 1, y).getGreen();
             leftBlue = picture.get(x - 1, y).getBlue();
@@ -108,6 +120,32 @@ public class PhotoEnhancer {
         double blueDiffSquared = Math.pow(rightBlue - leftBlue, 2);
 
         return redDiffSquared + greenDiffSquared + blueDiffSquared;
+    }
+
+    private Color findAverageHelper(int x, int y) {
+        int[] bounds = findBounds(x, y);
+
+        Color currentColor = picture.get(x, y);
+        int averageRed = currentColor.getRed();
+        int averageGreen = currentColor.getGreen();
+        int averageBlue = currentColor.getBlue();
+
+        int count = 1;
+        for (int row = bounds[0]; row < bounds[1]; row++) {
+            for (int col = bounds[2]; col < bounds[3]; col++) {
+                Color color = picture.get(col, row);
+                averageRed += color.getRed();
+                averageGreen += color.getGreen();
+                averageBlue += color.getBlue();
+                count++;
+            }
+        }
+
+        averageRed /= count;
+        averageGreen /= count;
+        averageBlue /= count;
+
+        return new Color(averageRed, averageGreen, averageBlue);
     }
 
     private double yGradientSquared(int x, int y) {
@@ -144,6 +182,18 @@ public class PhotoEnhancer {
             lowerGreen = picture.get(x, 0).getGreen();
             lowerBlue = picture.get(x, 0).getBlue();
         } else {
+//            Color upperAverage = findAverageHelper(x, y - 3);
+//
+//            upperRed = upperAverage.getRed();
+//            upperGreen = upperAverage.getGreen();
+//            upperBlue = upperAverage.getBlue();
+//
+//            Color lowerAverage = findAverageHelper(x, y + 3);
+//
+//            lowerRed = lowerAverage.getRed();
+//            lowerGreen = lowerAverage.getGreen();
+//            lowerBlue = lowerAverage.getBlue();
+
             upperRed = picture.get(x, y - 1).getRed();
             upperGreen = picture.get(x, y - 1).getGreen();
             upperBlue = picture.get(x, y - 1).getBlue();
@@ -217,7 +267,6 @@ public class PhotoEnhancer {
     public Color findAverageColor(int x, int y) {
         int[] bounds = findBounds(x, y);
 
-        double currentEnergy = energies[y][x];
         Color currentColor = picture.get(x, y);
         int averageRed = currentColor.getRed();
         int averageGreen = currentColor.getGreen();
@@ -226,8 +275,38 @@ public class PhotoEnhancer {
         int count = 1;
         for (int row = bounds[0]; row < bounds[1]; row++) {
             for (int col = bounds[2]; col < bounds[3]; col++) {
+                double currentEnergy = energy(x, y);
                 // Only add pixel if its energy is less than that of the specified pixel
-                if (energies[row][col] < currentEnergy) {
+                if (energy(col, row) < currentEnergy) {
+                    Color color = picture.get(col, row);
+                    averageRed += color.getRed();
+                    averageGreen += color.getGreen();
+                    averageBlue += color.getBlue();
+                    count++;
+                }
+            }
+        }
+
+        recalculateEnergies(bounds);
+
+        return new Color(averageRed / count, averageGreen / count, averageBlue / count);
+    }
+
+    // Finds the average color of the pixels in the area surrounding a specified pixel
+    public Color findAverageColor(int x, int y, Color originalColor) {
+        int[] bounds = findBounds(x, y);
+
+        Color currentColor = picture.get(x, y);
+        int averageRed = currentColor.getRed() + originalColor.getRed();
+        int averageGreen = currentColor.getGreen() + originalColor.getGreen();
+        int averageBlue = currentColor.getBlue() + originalColor.getBlue();
+
+        int count = 2;
+        for (int row = bounds[0]; row < bounds[1]; row++) {
+            for (int col = bounds[2]; col < bounds[3]; col++) {
+                double currentEnergy = energy(x, y);
+                // Only add pixel if its energy is less than that of the specified pixel
+                if (energy(col, row) < currentEnergy) {
                     Color color = picture.get(col, row);
                     averageRed += color.getRed();
                     averageGreen += color.getGreen();
