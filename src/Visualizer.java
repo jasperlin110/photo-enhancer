@@ -2,18 +2,35 @@ import edu.princeton.cs.algs4.Picture;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 
-public class Visualizer implements MouseListener, MouseMotionListener {
+public class Visualizer implements KeyListener, MouseListener, MouseMotionListener {
 
     private PhotoEnhancer pe;
     private Picture p;
 
     private int originalMouseX;
     private int originalMouseY;
+
+    private boolean useOneColor = false;
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        if (e.getKeyChar() == 's') {
+            useOneColor = !useOneColor;
+            System.out.println(e.getKeyChar());
+        }
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
 
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -73,16 +90,16 @@ public class Visualizer implements MouseListener, MouseMotionListener {
     }
 
     private void paintBounds(Picture p, int[] bounds, Point point) {
-//        double originalEnergy = pe.energy(originalMouseX, originalMouseY);
-//        Color originalColor = p.get(originalMouseX, originalMouseY);
-
         for (int row = bounds[0]; row < bounds[1]; row++) {
             for (int col = bounds[2]; col < bounds[3]; col++) {
                 // 4/26: added if statement.
                 if (pe.energy(col, row) < pe.energy(point.x, point.y)) {
-                    Color color = pe.findAverageColor(col, row);
-//                    Color color = pe.findAverageColor(col, row, originalColor);
-//                    Color color = pe.findAverageColor(originalMouseX, originalMouseY);
+                    Color color;
+                    if (!useOneColor) {
+                        color = pe.findAverageColor(col, row);
+                    } else {
+                        color = pe.findAverageColor(originalMouseX, originalMouseY);
+                    }
                     p.set(col, row, color);
                 }
             }
@@ -97,7 +114,8 @@ public class Visualizer implements MouseListener, MouseMotionListener {
         if (frame == null) {
             frame = new JFrame();
 
-            // mouseListeners
+            // keyListener & mouseListeners
+            frame.addKeyListener(this);
             frame.addMouseListener(this);
             frame.addMouseMotionListener(this);
 
